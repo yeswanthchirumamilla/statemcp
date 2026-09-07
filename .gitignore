@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Temporary / Upstream source copies
+tmp/
+
 # Production build output
 dist/
 

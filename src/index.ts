@@ -9,13 +9,16 @@ export { StateMCP } from "./core/state-mcp.js";
 export { StateEngine } from "./core/engine.js";
 export { StateMemoryManager } from "./core/memory.js";
 export { createMcpProtocolServer } from "./mcp/protocol-server.js";
+export { validateToolArguments, normalizeToJsonSchema } from "./core/validator.js";
 
 export type {
   StateMCPConfig,
   StateDefinition,
   ToolDefinition,
+  ToolAnnotations,
   ToolExecutionContext,
   ToolExecutionResult,
   SessionState,
   StateMemorySnapshot,
 } from "./core/types.js";
+

@@ -5,6 +5,7 @@ import {
   ToolExecutionContext,
 } from "./types.js";
 import { StateMemoryManager } from "./memory.js";
+import { validateToolArguments, normalizeToJsonSchema } from "./validator.js";
 
 export type StateListener<TContext = any> = (
   session: SessionState<TContext>,
@@ -137,24 +138,37 @@ export class StateEngine<TContext = Record<string, any>> {
   }
 
   /**
-   * Execute a tool by name with full state guardrails and helper context
+   * Execute a tool by name with full state guardrails, Anthropic input validation, and helper context
    */
   public async executeTool(
     name: string,
-    args: any = {}
+    args: any = {},
+    signal?: AbortSignal
   ): Promise<{
     success: boolean;
     data?: any;
     error?: string;
+    errorCode?: string;
     previousState?: string;
     currentState: string;
     stateSummary: string;
   }> {
+    if (signal?.aborted) {
+      return {
+        success: false,
+        error: "Request was cancelled by the client.",
+        errorCode: "CANCELLED",
+        currentState: this.session.currentState,
+        stateSummary: this.getStateSummary(),
+      };
+    }
+
     const tool = this.tools.get(name);
     if (!tool) {
       return {
         success: false,
         error: `Tool '${name}' is not registered on this StateMCP server.`,
+        errorCode: "METHOD_NOT_FOUND",
         currentState: this.session.currentState,
         stateSummary: this.getStateSummary(),
       };
@@ -172,10 +186,25 @@ export class StateEngine<TContext = Record<string, any>> {
           `[State Violation] Tool '${name}' is NOT available in state '${currentState}'. ` +
           `Valid states for this tool: [${tool.states.join(", ")}]. ` +
           `Currently available tools on this screen: [${activeToolNames.join(", ")}].`,
+        errorCode: "INVALID_PARAMS",
         currentState: this.session.currentState,
         stateSummary: this.getStateSummary(),
       };
     }
+
+    // Anthropic-Parity: Validate input arguments against tool schema
+    const schema = tool.schema || tool.inputSchema;
+    const validation = validateToolArguments(schema, args, name);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error,
+        errorCode: "INVALID_PARAMS",
+        currentState: this.session.currentState,
+        stateSummary: this.getStateSummary(),
+      };
+    }
+    const validatedArgs = validation.data;
 
     // Precondition verification
     if (tool.canExecute) {
@@ -189,6 +218,7 @@ export class StateEngine<TContext = Record<string, any>> {
         return {
           success: false,
           error: `[Precondition Failed for '${name}'] ${reason}`,
+          errorCode: "INVALID_PARAMS",
           currentState: this.session.currentState,
           stateSummary: this.getStateSummary(),
         };
@@ -202,6 +232,7 @@ export class StateEngine<TContext = Record<string, any>> {
     const helpers: ToolExecutionContext<TContext> = {
       context: Object.freeze({ ...this.session.context }),
       session: Object.freeze({ ...this.session }),
+      signal,
       transition: (to: string, contextUpdates?: Partial<TContext>) => {
         targetState = to;
         if (contextUpdates) {
@@ -223,7 +254,7 @@ export class StateEngine<TContext = Record<string, any>> {
     };
 
     try {
-      const result = await tool.execute(args, helpers);
+      const result = await tool.execute(validatedArgs, helpers);
 
       // Apply context updates
       if (Object.keys(pendingContextUpdates).length > 0) {

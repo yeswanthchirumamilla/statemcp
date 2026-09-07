@@ -117,6 +117,11 @@ export interface ToolExecutionContext<TContext = Record<string, any>> {
    * The current session info
    */
   session: Readonly<SessionState<TContext>>;
+
+  /**
+   * Optional AbortSignal from the client if the request is cancelled
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -131,6 +136,26 @@ export interface ToolExecutionResult<TContext = Record<string, any>> {
 }
 
 /**
+ * Tool annotations per Anthropic MCP specification
+ */
+export interface ToolAnnotations {
+  /**
+   * Hint that this tool does not modify environment or state
+   */
+  readOnlyHint?: boolean;
+
+  /**
+   * Hint that this tool performs irreversible or destructive changes
+   */
+  destructiveHint?: boolean;
+
+  /**
+   * Hint that this tool accesses the open internet or external systems
+   */
+  openWorldHint?: boolean;
+}
+
+/**
  * Definition of a Dynamic Tool registered in StateMCP
  */
 export interface ToolDefinition<TContext = Record<string, any>, TArgs = any> {
@@ -138,6 +163,11 @@ export interface ToolDefinition<TContext = Record<string, any>, TArgs = any> {
    * Tool name (must be unique)
    */
   name: string;
+
+  /**
+   * Human-friendly display title (per Anthropic MCP spec)
+   */
+  title?: string;
 
   /**
    * Description explaining what the tool accomplishes
@@ -151,7 +181,13 @@ export interface ToolDefinition<TContext = Record<string, any>, TArgs = any> {
   states: string[];
 
   /**
-   * Input schema definition for JSON Schema (standard MCP format)
+   * Input schema definition: supports either a native Zod schema (z.object({...}))
+   * or a standard JSON Schema object.
+   */
+  schema?: any;
+
+  /**
+   * Backward-compatible alias for JSON Schema definitions
    */
   inputSchema?: {
     type?: "object";
@@ -159,6 +195,11 @@ export interface ToolDefinition<TContext = Record<string, any>, TArgs = any> {
     required?: string[];
     [key: string]: any;
   };
+
+  /**
+   * Annotations for model reasoning hints (read-only, destructive, open-world)
+   */
+  annotations?: ToolAnnotations;
 
   /**
    * Optional precondition check. If false or { allowed: false }, the tool call is rejected
