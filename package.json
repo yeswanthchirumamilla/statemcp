@@ -37,6 +37,14 @@
   ],
   "author": "Antigravity",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeswanthchirumamilla/statemcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yeswanthchirumamilla/statemcp/issues"
+  },
+  "homepage": "https://github.com/yeswanthchirumamilla/statemcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
     "zod": "^3.24.2"
