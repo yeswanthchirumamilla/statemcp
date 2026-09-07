@@ -1,9 +1,9 @@
-# StateMCP (`statemcp`)
+# StatefulMCP (`stateful-mcp`)
 
 > **The State-Aware Dynamic Model Context Protocol (MCP) SDK**  
 > Expose any product, web app, or SaaS backend as a dynamic, stateful MCP server with built-in agent memory and context persistence.
 
-[![npm version](https://img.shields.io/badge/npm-v1.0.0-blue.svg)](https://www.npmjs.com/package/statemcp)
+[![npm version](https://img.shields.io/badge/npm-v1.0.0-blue.svg)](https://www.npmjs.com/package/stateful-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ES2022-blue)](https://www.typescriptlang.org/)
 
@@ -31,7 +31,7 @@ Traditional MCP servers register all tools statically up front. If your product 
 ## Installation
 
 ```bash
-npm install statemcp @modelcontextprotocol/sdk
+npm install stateful-mcp @modelcontextprotocol/sdk
 ```
 
 ---
@@ -39,7 +39,7 @@ npm install statemcp @modelcontextprotocol/sdk
 ## Quickstart: Exposing Your Product in 4 Steps
 
 ```typescript
-import { StateMCP } from "statemcp";
+import { StateMCP } from "stateful-mcp";
 
 // 1. Initialize StateMCP for your product
 const app = new StateMCP({

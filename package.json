@@ -1,5 +1,5 @@
 {
-  "name": "statemcp",
+  "name": "stateful-mcp",
   "version": "1.0.0",
   "description": "Developer SDK to expose any product as a State-Aware Dynamic Model Context Protocol (MCP) server with agent state memory",
   "main": "./dist/index.js",
